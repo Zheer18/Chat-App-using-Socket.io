@@ -1,0 +1,38 @@
+Parameters:
+  Instancetype:
+    Default: 't2.micro'
+    Type: String
+  KeyPair:
+    Default: CFM
+    Type: String
+  
+
+Resources:
+  ChatLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateName: ChatLaunchTemplate
+      LaunchTemplateData: 
+        ImageId: ami-09e67e426f25ce0d7
+        InstanceType: !Ref Instancetype
+        KeyName: !Ref KeyPair
+        SecurityGroupIds: 
+          - !ImportValue SCG
+  
+  ChatAutoscallingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: Chat App
+      MinSize: '1'
+      MaxSize: '2'
+      DesiredCapacity: '1'
+      LaunchTemplate:
+        LaunchTemplateId: !Ref ChatLaunchTemplate
+        Version: 1
+      TargetGroupARNs: 
+        - !ImportValue TargetARN
+      VPCZoneIdentifier: 
+        - !ImportValue  Pr1
+        - !ImportValue  Pr2
+
+        
