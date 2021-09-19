@@ -1,0 +1,42 @@
+Resources:
+  Chatloadbalacer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ChatApplication
+      Scheme: internet-facing
+      SecurityGroups: 
+        - !ImportValue SCG
+      Subnets: 
+        - !ImportValue Pb1
+        - !ImportValue Pb2
+      Tags: 
+        - Key: Name
+          Value: Chat
+      Type: application  
+
+  ChatAlblistner:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref ChatTargetGroup
+      LoadBalancerArn: !Ref Chatloadbalacer
+      Port: 80
+      Protocol: HTTP
+
+
+  ChatTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: ChatTarget
+      Protocol: HTTP
+      Port: 80
+      TargetType: instance
+      VpcId: !ImportValue VPCID 
+
+Outputs:
+  TargetGroup:
+    Description: Target Group ARN
+    Value: !Ref ChatTargetGroup
+    Export:
+      Name: TargetARN
