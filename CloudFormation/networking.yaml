@@ -1,0 +1,168 @@
+Resources:
+    ChatVPC:
+        Type: AWS::EC2::VPC
+        Properties: 
+          CidrBlock: 10.0.0.0/16
+          Tags:
+          - Key: Name
+            Value: ChatVPC
+
+
+    ChatInternetGateway:
+        Type: AWS::EC2::InternetGateway
+        Properties:
+          Tags:
+          - Key: Name
+            Value: chatInternet
+
+
+    VPCattachmentIGW:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties: 
+          InternetGatewayId: !Ref ChatInternetGateway
+          VpcId: !Ref ChatVPC
+
+
+    ChatPb1Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: !Ref ChatVPC
+          CidrBlock: 10.0.0.0/24
+          AvailabilityZone:
+              Fn::Select:
+              - 0
+              - Fn::GetAZs: ""
+          MapPublicIpOnLaunch: true
+          Tags:
+          - Key: Name
+            Value: Pb1  
+    
+
+    ChatPb2Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: !Ref ChatVPC
+          CidrBlock: 10.0.1.0/24
+          AvailabilityZone:
+              Fn::Select:
+              - 1
+              - Fn::GetAZs: ""
+          MapPublicIpOnLaunch: true
+          Tags:
+          - Key: Name
+            Value: Pb2 
+
+    
+    ChatRouteTable:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref ChatVPC
+          Tags:
+          - Key: Name
+            Value: ChatRouttable
+    
+    ChatRoute:
+      Type: AWS::EC2::Route
+      Properties:
+         RouteTableId: !Ref ChatRouteTable 
+         DestinationCidrBlock: 0.0.0.0/0
+         GatewayId: !Ref ChatInternetGateway 
+
+    ChatP1SubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref ChatPb1Subnet
+        RouteTableId: !Ref ChatRouteTable
+    
+    ChatP2SubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref ChatPb2Subnet
+        RouteTableId: !Ref ChatRouteTable
+
+    ChatPr1Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: !Ref ChatVPC
+          CidrBlock: 10.0.2.0/24
+          AvailabilityZone:
+              Fn::Select:
+              - 0
+              - Fn::GetAZs: ""
+          MapPublicIpOnLaunch: false
+          Tags:
+          - Key: Name
+            Value: Pr1
+
+    
+    ChatPr2Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: !Ref ChatVPC
+          CidrBlock: 10.0.3.0/24
+          AvailabilityZone:
+              Fn::Select:
+              - 1
+              - Fn::GetAZs: ""
+          MapPublicIpOnLaunch: false
+          Tags:
+          - Key: Name
+            Value: Pr2
+
+    ChatSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: For Application load balancer
+            VpcId: !Ref ChatVPC
+            SecurityGroupIngress:
+            - IpProtocol: tcp
+              FromPort: 80
+              ToPort: 80
+              CidrIp: 0.0.0.0/0
+            - IpProtocol: tcp
+              FromPort: 22
+              ToPort: 22
+              CidrIp: 0.0.0.0/0
+            - IpProtocol: tcp
+              FromPort: 443
+              ToPort: 443
+              CidrIp: 0.0.0.0/0
+
+Outputs:
+  VPC:
+    Description: VPC ID
+    Value: !Ref ChatVPC
+    Export:
+      Name: VPCID
+
+  Pb1:
+    Description: Pb1 ID
+    Value: !Ref ChatPb1Subnet
+    Export:
+      Name: Pb1
+  Pb2:
+    Description: Pb2 ID
+    Value: !Ref ChatPb2Subnet
+    Export:
+      Name: Pb2
+  Pr1:
+    Description: Pr1 ID
+    Value: !Ref ChatPr1Subnet
+    Export:
+      Name: Pr1
+  Pr2:
+    Description: Pr2 ID
+    Value: !Ref ChatPr2Subnet
+    Export:
+      Name: Pr2
+
+  SCG:
+    Description: Security Group ID
+    Value: !GetAtt  ChatSecurityGroup.GroupId
+    Export:
+      Name: SCG
+
+        
+
+
+
