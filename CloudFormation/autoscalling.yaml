@@ -17,7 +17,7 @@ Resources:
         InstanceType: !Ref Instancetype
         KeyName: !Ref KeyPair
         SecurityGroupIds: 
-          - !ImportValue SCG
+          - !ImportValue SCGSG
   
   ChatAutoscallingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -34,5 +34,27 @@ Resources:
       VPCZoneIdentifier: 
         - !ImportValue  Pr1
         - !ImportValue  Pr2
+
+  EC2JumpHost:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-09e67e426f25ce0d7
+      InstanceType: !Ref Instancetype
+      KeyName: !Ref KeyPair 
+      SecurityGroupIds: 
+        - !ImportValue SCGEC2
+      SubnetId: !ImportValue Pb2 
+      Tags:
+        - Key: Name
+          Value: Jump Host
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash 
+          sudo apt-get update
+          sudo apt-get upgrade -y
+          sudo apt-get install ansible -y
+          sudo apt-get install vim -y
+
+      
 
         

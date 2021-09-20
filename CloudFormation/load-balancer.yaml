@@ -5,7 +5,7 @@ Resources:
       Name: ChatApplication
       Scheme: internet-facing
       SecurityGroups: 
-        - !ImportValue SCG
+        - !ImportValue SCGALB
       Subnets: 
         - !ImportValue Pb1
         - !ImportValue Pb2

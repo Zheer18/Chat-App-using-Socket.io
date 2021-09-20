@@ -53,32 +53,76 @@ Resources:
             Value: Pb2 
 
     
-    ChatRouteTable:
+    ChatRouteTablePB:
         Type: AWS::EC2::RouteTable
         Properties:
           VpcId: !Ref ChatVPC
           Tags:
           - Key: Name
-            Value: ChatRouttable
+            Value: ChatRouttablePB
+
+    ChatRouteTablePR:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref ChatVPC
+          Tags:
+          - Key: Name
+            Value: ChatRouttablePR
     
     ChatRoute:
       Type: AWS::EC2::Route
       Properties:
-         RouteTableId: !Ref ChatRouteTable 
+         RouteTableId: !Ref ChatRouteTablePB
          DestinationCidrBlock: 0.0.0.0/0
          GatewayId: !Ref ChatInternetGateway 
+
+    EIP:
+      DependsOn: VPCattachmentIGW
+      Type: AWS::EC2::EIP
+      Properties:
+        Domain: vpc
+
+    ChatPRRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId: !Ref ChatRouteTablePR
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !Ref ChatNAT
+    
+    ChatNAT:
+      Type: AWS::EC2::NatGateway
+      Properties:
+        AllocationId: 
+          Fn::GetAtt:
+            - EIP
+            - AllocationId
+        SubnetId: !Ref ChatPb2Subnet
+        ConnectivityType: public
+    
 
     ChatP1SubnetRouteTableAssociation:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties:
         SubnetId: !Ref ChatPb1Subnet
-        RouteTableId: !Ref ChatRouteTable
+        RouteTableId: !Ref ChatRouteTablePB
     
     ChatP2SubnetRouteTableAssociation:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties:
         SubnetId: !Ref ChatPb2Subnet
-        RouteTableId: !Ref ChatRouteTable
+        RouteTableId: !Ref ChatRouteTablePB
+
+    ChatPR1SubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref ChatPr1Subnet
+        RouteTableId: !Ref ChatRouteTablePR
+    
+    ChatPR2SubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref ChatPr2Subnet
+        RouteTableId: !Ref ChatRouteTablePR
 
     ChatPr1Subnet:
         Type: AWS::EC2::Subnet
@@ -109,7 +153,7 @@ Resources:
           - Key: Name
             Value: Pr2
 
-    ChatSecurityGroup:
+    ChatSecurityGroupALB:
         Type: AWS::EC2::SecurityGroup
         Properties:
             GroupDescription: For Application load balancer
@@ -123,10 +167,34 @@ Resources:
               FromPort: 22
               ToPort: 22
               CidrIp: 0.0.0.0/0
+
+    ChatSecurityGroupSG:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: For autoscalling group
+            VpcId: !Ref ChatVPC
+            SecurityGroupIngress:
             - IpProtocol: tcp
-              FromPort: 443
-              ToPort: 443
+              FromPort: 80
+              ToPort: 80
+              SourceSecurityGroupId: !Ref ChatSecurityGroupALB
+            - IpProtocol: tcp
+              FromPort: 22
+              ToPort: 22
+              SourceSecurityGroupId: !Ref ChatSecurityGroupEC2
+
+
+    ChatSecurityGroupEC2:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: For jumphost
+            VpcId: !Ref ChatVPC
+            SecurityGroupIngress:
+            - IpProtocol: tcp
+              FromPort: 22
+              ToPort: 22
               CidrIp: 0.0.0.0/0
+
 
 Outputs:
   VPC:
@@ -156,11 +224,23 @@ Outputs:
     Export:
       Name: Pr2
 
-  SCG:
-    Description: Security Group ID
-    Value: !GetAtt  ChatSecurityGroup.GroupId
+  SCGALB:
+    Description: Security Group ID for ALB
+    Value: !GetAtt  ChatSecurityGroupALB.GroupId
     Export:
-      Name: SCG
+      Name: SCGALB
+
+  SCGEC2:
+    Description: Security Group ID for JUMP host
+    Value: !GetAtt  ChatSecurityGroupEC2.GroupId
+    Export:
+      Name: SCGEC2
+
+  SCGSG:
+    Description: Security Group ID for SG
+    Value: !GetAtt  ChatSecurityGroupSG.GroupId
+    Export:
+      Name: SCGSG
 
         
 
