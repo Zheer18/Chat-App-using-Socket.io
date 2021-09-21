@@ -20,7 +20,7 @@ A simple chat app
 
 In the Autoscalling.yaml you can specify instances type and the Key Pair if your going with default one you should download the Key pair i am using in the link down below
 
-### Step 2 (Run asnible playbook on Jump host server)
+### Step 2 (Run asnible playbook)
 
 In order to deploy the app on the autoscalling groups first we need to connect to an Jump host server from the server we can connect to the servers
 
