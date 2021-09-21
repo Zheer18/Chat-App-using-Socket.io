@@ -1,2 +1,2 @@
-server ansible_ssh_host=10.0.3.182 ansible_user=ubuntu
-Jump-host ansible_host=54.197.8.0 ansible_connection=ssh ansible_user=ubuntu
+server ansible_ssh_host=10.0.2.244 ansible_user=ubuntu
+Jump-host ansible_host=52.91.88.215 ansible_connection=ssh ansible_user=ubuntu
