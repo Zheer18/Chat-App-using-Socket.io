@@ -1,0 +1,41 @@
+--- 
+- hosts: server
+  become: yes
+  become_method: sudo
+  remote_user: root
+  tasks: 
+    - name: Update the servers
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+    - name: Upgrade all the package
+      apt: upgrade=dist force_apt_get=yes
+    - name: install git
+      apt: 
+        name: git
+        state: latest
+        update_cache: yes
+    - name: Creates directory
+      file:
+        path: /home/ubuntu/chat
+        state: directory
+    - name: clone the repository
+      git: 
+        repo: "https://github.com/Zheer18/Chat-App-using-Socket.io.git"
+        dest: "/home/ubuntu/chat"
+        clone: yes
+        update: yes
+    - name: Curl nvm
+      get_url:
+        url: https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh 
+        dest: /home/ubuntu/
+    - name: install nvm 
+      shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+    - name: active ssh
+      command: sh install.sh
+    - name: install npm
+      apt: 
+        name: npm
+        state: latest
+    - name: install module 
+      command: chdir=/home/ubuntu/chat/Playbook npm install
+    - name: run node app
+      command: chdir=/home/ubuntu/chat/Playbook node app.js
