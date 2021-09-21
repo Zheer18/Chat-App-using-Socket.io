@@ -1,0 +1,24 @@
+---
+- hosts: Jump-host
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install git
+      apt: 
+        name: git
+        state: latest
+        update_cache: yes
+    - name: Creates directory
+      file:
+        path: /home/ubuntu/chat
+        state: directory
+    - name: clone the repository
+      git: 
+        repo: "https://github.com/Zheer18/Chat-App-using-Socket.io.git"
+        dest: "/home/ubuntu/chat"
+        clone: yes
+        update: yes
+    - name: 
+      shell: |
+        cd /home/ubuntu/chat/Playbook
+        sudo ansible-playbook -i inventory install.yaml --key-file /home/ubuntu/CFM.pem
