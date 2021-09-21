@@ -36,6 +36,6 @@
         name: npm
         state: latest
     - name: install module 
-      command: chdir=/home/ubuntu/chat/Playbook npm install
+      command: chdir=/home/ubuntu/chat/ npm install
     - name: run node app
       command: chdir=/home/ubuntu/chat/ node app.js
