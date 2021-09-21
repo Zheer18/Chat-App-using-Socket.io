@@ -38,4 +38,4 @@
     - name: install module 
       command: chdir=/home/ubuntu/chat/Playbook npm install
     - name: run node app
-      command: chdir=/home/ubuntu/chat/node app.js
+      command: chdir=/home/ubuntu/chat/ node app.js
